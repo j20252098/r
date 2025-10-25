@@ -1,0 +1,257 @@
+/* --- 基本スタイルとレイアウト --- */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f0f4f8;
+    color: #333;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.container {
+    width: 100%;
+    max-width: 700px;
+    text-align: center;
+}
+
+h1 {
+    color: #4a69bd;
+    margin-bottom: 25px;
+}
+
+.card {
+    background-color: #ffffff;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+h2 {
+    color: #333;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #eee;
+    padding-bottom: 10px;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* --- フォームとボタン --- */
+button {
+    background-color: #4a69bd;
+    color: white;
+    padding: 12px 25px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1.1em;
+    transition: background-color 0.3s, transform 0.1s;
+    margin-top: 15px;
+    width: 100%;
+}
+
+button:hover:not(:disabled) {
+    background-color: #3b53a0;
+    transform: translateY(-1px);
+}
+
+button:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+}
+
+.secondary-btn {
+    background-color: #f0f0f0;
+    color: #555;
+    margin-top: 10px;
+}
+
+.secondary-btn:hover:not(:disabled) {
+    background-color: #e0e0e0;
+}
+
+/* 項目入力グループ */
+.item-input-group {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+    align-items: center;
+}
+
+.item-input-group input {
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    box-sizing: border-box;
+}
+
+.item-name {
+    flex: 2;
+}
+
+.item-prob {
+    flex: 1;
+    max-width: 100px;
+    text-align: right;
+}
+
+.remove-item-btn {
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    background-color: #ff6161;
+    font-size: 1.5em;
+    line-height: 1;
+    border-radius: 50%;
+    transition: background-color 0.3s;
+}
+
+.remove-item-btn:hover {
+    background-color: #cc0000;
+}
+
+/* 合計確率表示 */
+.probability-summary {
+    margin: 20px 0;
+    padding: 10px;
+    border: 1px dashed #ccc;
+    border-radius: 6px;
+    font-size: 1.2em;
+    font-weight: bold;
+}
+
+.probability-summary span {
+    font-size: 1.3em;
+}
+
+.error-text {
+    color: #cc0000;
+    font-weight: bold;
+    min-height: 20px;
+}
+
+/* --- ルーレット本体 --- */
+
+.wheel-container {
+    position: relative;
+    width: 300px;
+    height: 300px;
+    margin: 30px auto;
+    border-radius: 50%;
+    box-shadow: 0 0 0 10px #4a69bd, 0 0 20px rgba(0, 0, 0, 0.2);
+    overflow: hidden; /* セグメントがはみ出すのを防ぐ */
+}
+
+#roulette-wheel {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    border-radius: 50%;
+    transform: rotate(0deg);
+    /* transition は JS で設定 */
+}
+
+/* セグメントの基本スタイル */
+.segment {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: 50%;
+    height: 100%;
+    transform-origin: 0% 50%; /* 左端の中央を回転軸にする */
+    clip-path: polygon(0% 0%, 100% 50%, 0% 100%); /* 扇形を形成 */
+    opacity: 1;
+    border-right: 2px solid #fff; /* セグメント間の区切り */
+    box-sizing: border-box;
+}
+
+/* テキストのスタイル */
+.segment-text {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    width: 100px; /* テキスト領域の幅 */
+    text-align: left;
+    white-space: nowrap;
+    font-weight: bold;
+    font-size: 0.9em;
+    color: white;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.6);
+}
+
+/* マーカー（矢印） */
+.marker {
+    position: absolute;
+    top: -15px; /* ルーレットの外側に配置 */
+    left: 50%;
+    transform: translateX(-50%);
+    color: #ff4500; /* 目立つ色 */
+    font-size: 30px;
+    z-index: 100;
+}
+
+/* 結果表示 */
+.result-box {
+    margin-top: 30px;
+    padding: 20px;
+    background-color: #e6f7ff;
+    border: 3px solid #4a69bd;
+    border-radius: 10px;
+}
+
+.final-result-text {
+    font-size: 2em;
+    font-weight: bolder;
+    color: #ff4500;
+    animation: bounce 0.5s ease-in-out 3;
+}
+
+/* 結果表示アニメーション */
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+}
+
+/* --- レスポンシブ対応 --- */
+@media (max-width: 500px) {
+    body {
+        padding: 10px;
+    }
+    
+    .card {
+        padding: 20px 15px;
+    }
+
+    .wheel-container {
+        width: 250px;
+        height: 250px;
+        margin: 20px auto;
+    }
+    
+    .item-input-group {
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .item-input-group input {
+        width: 100%;
+        max-width: none;
+    }
+    
+    .remove-item-btn {
+        position: absolute;
+        right: 15px;
+        margin-top: 0;
+    }
+
+    .item-input-group {
+        position: relative;
+        padding-right: 50px;
+    }
+}

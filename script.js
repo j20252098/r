@@ -127,62 +127,70 @@ startBtn.addEventListener('click', () => {
 resetBtn.addEventListener('click', () => {
     rouletteArea.classList.add('hidden');
     settingsArea.classList.remove('hidden');
-    rouletteWheel.style.transform = 'rotate(0deg)'; 
+    rouletteWheel.style.transform = 'rotate(-90deg)'; // 初期回転角度に戻す
 });
 
-// --- ルーレット描画ロジック (修正済み) ---
+// セグメントの色を循環させる
+function getColor(index) {
+    // カラーコードはそのまま使用
+    const colors = ['#FF6F61', '#6B5B95', '#88B04B', '#F7CAC9', '#92A8D1', '#CC99C9', '#66D2D6'];
+    return colors[index % colors.length];
+}
+
+// --- ルーレット描画ロジック (conic-gradient方式に修正) ---
 
 function setupRouletteWheel() {
     rouletteWheel.innerHTML = '';
-    const totalAngle = 360;
-    let currentAngle = 0;
     
+    let currentAngle = 0;
     const totalProbForDrawing = rouletteItems.reduce((sum, item) => sum + item.probability, 0);
 
     if (totalProbForDrawing === 0) return;
 
+    let gradientString = 'conic-gradient(';
+    let textElements = [];
+
     rouletteItems.forEach((item, index) => {
-        const angle = (item.probability / totalProbForDrawing) * totalAngle;
+        const angle = (item.probability / totalProbForDrawing) * 360;
         const color = getColor(index);
+        
+        // conic-gradientの文字列を生成
+        if (index > 0) {
+            gradientString += `, `;
+        }
+        // conic-gradientは 'from top' (0deg)から時計回り
+        gradientString += `${color} ${currentAngle}deg ${currentAngle + angle}deg`;
 
-        const segment = document.createElement('div');
-        segment.classList.add('segment');
-        // segmentのスタイル設定
-        segment.style.backgroundColor = color;
-        // 扇形に見せるための回転と傾斜を設定
-        segment.style.transform = `rotate(${currentAngle}deg) skewY(-${90 - angle}deg)`;
-        segment.style.zIndex = index + 1;
-        segment.dataset.name = item.name; // デバッグ用に項目名をデータセットに追加
-
-        // テキスト要素を作成し、セグメントの中央に配置
+        // テキスト要素を作成
         const textElement = document.createElement('div');
         textElement.classList.add('segment-text');
-        textElement.textContent = item.name; 
+        textElement.textContent = item.name;
         
-        // テキストを垂直に保ち、セグメントの真ん中に配置するための調整
-        const textRotation = currentAngle + (angle / 2);
+        // テキストを中央から放射状に配置するための計算
+        const textRotation = currentAngle + (angle / 2); // セグメントの中央角度
         
         // テキストが水平を保ちつつ、ルーレットの中心から外側へ配置されるように調整
         textElement.style.transform = `
-            rotate(${textRotation}deg) 
+            rotate(${textRotation}deg)
             translateY(-50%) 
-            translateX(75px) /* ルーレットの中心から外側へ移動 (半径の約半分) */
-            rotate(${-textRotation}deg) /* テキスト自体を逆回転させて水平を保つ */
+            translateX(100px) /* ルーレットの中心から外側へ移動 */
+            rotate(-90deg) /* テキスト自体を逆回転させて水平を保つ */
         `;
         
-        textElement.style.zIndex = rouletteItems.length + 10; 
-        
-        rouletteWheel.appendChild(segment);
-        rouletteWheel.appendChild(textElement);
+        textElements.push(textElement);
         
         currentAngle += angle;
     });
-}
+    
+    gradientString += ')';
 
-// セグメントの色を循環させる
-function getColor(index) {
-    const colors = ['#FF6F61', '#6B5B95', '#88B04B', '#F7CAC9', '#92A8D1', '#CC99C9', '#66D2D6'];
-    return colors[index % colors.length];
+    // 背景にグラデーションを適用し、テキストをルーレットに追加
+    rouletteWheel.style.background = gradientString;
+    textElements.forEach(el => rouletteWheel.appendChild(el));
+    
+    // ルーレットの初期位置を修正 (マーカーが上に来るように 90度回転させる)
+    // conic-gradientは上(0度)から始まるため、マーカー位置(左側)に0度セグメントが来るように -90度回転
+    rouletteWheel.style.transform = `rotate(-90deg)`;
 }
 
 
@@ -216,25 +224,27 @@ function spinRoulette() {
     let cumulativeAngle = 0;
     const totalProbForDrawing = rouletteItems.reduce((sum, item) => sum + item.probability, 0);
     
-    // 停止セグメントの開始角度と終了角度を計算
     for (const item of rouletteItems) {
         const angle = (item.probability / totalProbForDrawing) * 360;
         
         if (item.name === resultItem.name) {
-            // ランダムな停止位置をセグメント内で設定 (見た目のバリエーション用)
-            // 停止位置をセグメント内のどこかにランダムに調整
-            const randomOffset = Math.random() * (angle - 10) + 5; // セグメントの端から5度内側
-            const stopPosition = cumulativeAngle + randomOffset;
+            // ランダムな停止位置をセグメント内で設定 (5度から angle-5度 の範囲)
+            const randomOffset = Math.random() * (angle - 10) + 5; 
+            const stopPositionAngle = cumulativeAngle + randomOffset;
 
-            // 最終停止角度（反時計回り）
-            // マーカー(0度, 上向き)と停止位置が合うように回転。
-            // 大量の回転 (5~7周) + 最終停止位置(270度付近に見えるように調整)
-            const fullSpins = 7 * 360; // 回転数を増やして迫力を出す
-            const markerOffset = 270; // 停止位置を見やすい9時方向(270度)に調整
+            // 最終停止角度（時計回り）
+            // マーカーは左向き(-90度位置)。描画も-90度回転させている。
+            // 7周分(360*7) + 最終停止位置(stopPositionAngle)
+            // 回転は時計回り(+)で、目標角度を stopPositionAngle に合わせる
+            const fullSpins = 7 * 360; 
             
-            // targetAngle = (fullSpins + 360) - (stopPosition + markerOffset)
-            targetAngle = fullSpins + markerOffset - stopPosition; 
+            // 停止位置がマーカー(左側, 270度)に来るように計算
+            // targetAngle = fullSpins + 360 - stopPositionAngle;
             
+            // ルーレットは時計回り(正)に回転させる
+            // 最終角度は、(360 * 周回数) + (360 - 停止位置の角度) + (オフセット)
+            targetAngle = fullSpins + (360 - stopPositionAngle); 
+
             break;
         }
         cumulativeAngle += angle;
@@ -242,7 +252,7 @@ function spinRoulette() {
     
     // CSSアニメーションをトリガー
     rouletteWheel.style.transition = 'transform 6s cubic-bezier(0.25, 0.1, 0.25, 1)'; 
-    rouletteWheel.style.transform = `rotate(${-targetAngle}deg)`;
+    rouletteWheel.style.transform = `rotate(${targetAngle}deg)`; // 時計回り(+)
     
     // 停止後に結果を表示
     setTimeout(() => {
@@ -256,9 +266,10 @@ function spinRoulette() {
         // アニメーションの初期化（次回スムーズに動かすため）
         rouletteWheel.style.transition = 'none';
         const normalizedAngle = targetAngle % 360;
-        rouletteWheel.style.transform = `rotate(${-normalizedAngle}deg)`;
+        // 次回は初期回転-90度を考慮した位置からスタート
+        rouletteWheel.style.transform = `rotate(${normalizedAngle - 90}deg)`; 
         
-    }, 6100); // アニメーション時間 + 少しの余裕
+    }, 6100); 
 }
 
 spinBtn.addEventListener('click', spinRoulette);

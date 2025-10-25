@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
     updateTotalProbability();
 });
 
-// 項目入力フィールドを生成する関数
+// 項目入力フィールドを生成する関数 (省略)
 function addItem(name = '', probability = '') {
     const itemDiv = document.createElement('div');
     itemDiv.classList.add('item-input-group');
@@ -32,7 +32,6 @@ function addItem(name = '', probability = '') {
     `;
     itemsList.appendChild(itemDiv);
 
-    // イベントリスナー設定
     itemDiv.querySelector('.remove-item-btn').addEventListener('click', () => {
         if (itemsList.children.length > 1) {
             itemsList.removeChild(itemDiv);
@@ -45,7 +44,7 @@ function addItem(name = '', probability = '') {
     itemDiv.querySelector('.item-prob').addEventListener('input', updateTotalProbability);
 }
 
-// 合計確率を更新し、100%チェックを行う関数
+// 合計確率を更新し、100%チェックを行う関数 (省略)
 function updateTotalProbability() {
     let total = 0;
     const itemProbInputs = document.querySelectorAll('.item-prob');
@@ -74,8 +73,7 @@ function updateTotalProbability() {
     }
 }
 
-// --- 画面切り替えと設定保存 ---
-
+// 画面切り替えと設定保存 (省略)
 addItemBtn.addEventListener('click', () => addItem());
 
 startBtn.addEventListener('click', () => {
@@ -127,18 +125,16 @@ startBtn.addEventListener('click', () => {
 resetBtn.addEventListener('click', () => {
     rouletteArea.classList.add('hidden');
     settingsArea.classList.remove('hidden');
-    rouletteWheel.style.transform = 'rotate(-90deg)'; // 初期回転角度に戻す
+    rouletteWheel.style.transform = 'rotate(-90deg)'; 
 });
 
-// セグメントの色を循環させる
+// セグメントの色を循環させる (省略)
 function getColor(index) {
-    // カラーコードはそのまま使用
     const colors = ['#FF6F61', '#6B5B95', '#88B04B', '#F7CAC9', '#92A8D1', '#CC99C9', '#66D2D6'];
     return colors[index % colors.length];
 }
 
 // --- ルーレット描画ロジック (conic-gradient方式に修正) ---
-
 function setupRouletteWheel() {
     rouletteWheel.innerHTML = '';
     
@@ -158,7 +154,6 @@ function setupRouletteWheel() {
         if (index > 0) {
             gradientString += `, `;
         }
-        // conic-gradientは 'from top' (0deg)から時計回り
         gradientString += `${color} ${currentAngle}deg ${currentAngle + angle}deg`;
 
         // テキスト要素を作成
@@ -169,12 +164,12 @@ function setupRouletteWheel() {
         // テキストを中央から放射状に配置するための計算
         const textRotation = currentAngle + (angle / 2); // セグメントの中央角度
         
-        // テキストが水平を保ちつつ、ルーレットの中心から外側へ配置されるように調整
+        // ★テキストの回転を修正★
         textElement.style.transform = `
             rotate(${textRotation}deg)
             translateY(-50%) 
-            translateX(100px) /* ルーレットの中心から外側へ移動 */
-            rotate(-90deg) /* テキスト自体を逆回転させて水平を保つ */
+            translateX(100px) 
+            rotate(90deg) /* テキスト自体を水平に近く戻す回転を90度に調整 */
         `;
         
         textElements.push(textElement);
@@ -188,14 +183,12 @@ function setupRouletteWheel() {
     rouletteWheel.style.background = gradientString;
     textElements.forEach(el => rouletteWheel.appendChild(el));
     
-    // ルーレットの初期位置を修正 (マーカーが上に来るように 90度回転させる)
-    // conic-gradientは上(0度)から始まるため、マーカー位置(左側)に0度セグメントが来るように -90度回転
+    // ルーレットの初期位置を修正 (マーカーが左側に来るように -90度回転)
     rouletteWheel.style.transform = `rotate(-90deg)`;
 }
 
 
-// --- 抽選ロジック ---
-
+// --- 抽選ロジック (省略) ---
 function getResult() {
     const totalProb = rouletteItems.reduce((sum, item) => sum + item.probability, 0);
     const randomNumber = Math.random() * totalProb;
@@ -219,7 +212,6 @@ function spinRoulette() {
     
     const resultItem = getResult();
     
-    // 角度計算
     let targetAngle = 0;
     let cumulativeAngle = 0;
     const totalProbForDrawing = rouletteItems.reduce((sum, item) => sum + item.probability, 0);
@@ -228,21 +220,10 @@ function spinRoulette() {
         const angle = (item.probability / totalProbForDrawing) * 360;
         
         if (item.name === resultItem.name) {
-            // ランダムな停止位置をセグメント内で設定 (5度から angle-5度 の範囲)
             const randomOffset = Math.random() * (angle - 10) + 5; 
             const stopPositionAngle = cumulativeAngle + randomOffset;
 
-            // 最終停止角度（時計回り）
-            // マーカーは左向き(-90度位置)。描画も-90度回転させている。
-            // 7周分(360*7) + 最終停止位置(stopPositionAngle)
-            // 回転は時計回り(+)で、目標角度を stopPositionAngle に合わせる
             const fullSpins = 7 * 360; 
-            
-            // 停止位置がマーカー(左側, 270度)に来るように計算
-            // targetAngle = fullSpins + 360 - stopPositionAngle;
-            
-            // ルーレットは時計回り(正)に回転させる
-            // 最終角度は、(360 * 周回数) + (360 - 停止位置の角度) + (オフセット)
             targetAngle = fullSpins + (360 - stopPositionAngle); 
 
             break;
@@ -250,11 +231,9 @@ function spinRoulette() {
         cumulativeAngle += angle;
     }
     
-    // CSSアニメーションをトリガー
     rouletteWheel.style.transition = 'transform 6s cubic-bezier(0.25, 0.1, 0.25, 1)'; 
     rouletteWheel.style.transform = `rotate(${targetAngle}deg)`; // 時計回り(+)
     
-    // 停止後に結果を表示
     setTimeout(() => {
         isSpinning = false;
         spinBtn.disabled = false;
@@ -263,10 +242,8 @@ function spinRoulette() {
         finalResultText.textContent = resultItem.name;
         resultDisplay.classList.remove('hidden');
         
-        // アニメーションの初期化（次回スムーズに動かすため）
         rouletteWheel.style.transition = 'none';
         const normalizedAngle = targetAngle % 360;
-        // 次回は初期回転-90度を考慮した位置からスタート
         rouletteWheel.style.transform = `rotate(${normalizedAngle - 90}deg)`; 
         
     }, 6100); 

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>確率設定ルーレット</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>確率設定ルーレット</h1>
+
+        <div id="settings-area" class="card">
+            <h2>抽選項目と確率の設定</h2>
+            <div id="items-list">
+                </div>
+            
+            <button id="add-item-btn" class="secondary-btn">+ 項目を追加</button>
+            
+            <div id="total-probability" class="probability-summary">
+                合計確率: <span id="current-total">0</span> / 100%
+            </div>
+            
+            <p id="error-message" class="error-text"></p>
+            
+            <button id="start-btn">設定を保存してルーレットへ</button>
+        </div>
+
+        <div id="roulette-area" class="card hidden">
+            <h2 id="roulette-title"></h2>
+            
+            <div class="wheel-container">
+                <div id="roulette-wheel">
+                    </div>
+                <div class="marker">▼</div>
+            </div>
+            
+            <button id="spin-btn">回す！</button>
+            
+            <div id="result-display" class="result-box hidden">
+                <p>結果:</p>
+                <p id="final-result" class="final-result-text"></p>
+            </div>
+            
+            <button id="reset-btn" class="secondary-btn">設定に戻る</button>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>

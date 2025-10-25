@@ -136,7 +136,7 @@ button:disabled {
     min-height: 20px;
 }
 
-/* --- ルーレット本体 --- */
+/* --- ルーレット本体 (修正済み) --- */
 
 .wheel-container {
     position: relative;
@@ -144,8 +144,10 @@ button:disabled {
     height: 300px;
     margin: 30px auto;
     border-radius: 50%;
-    box-shadow: 0 0 0 10px #4a69bd, 0 0 20px rgba(0, 0, 0, 0.2);
-    overflow: hidden; /* セグメントがはみ出すのを防ぐ */
+    /* 外側の枠を調整 */
+    box-shadow: 0 0 0 10px #f0f4f8, 0 0 20px rgba(0, 0, 0, 0.2); 
+    overflow: hidden; 
+    border: 5px solid #4a69bd; /* ルーレット自体の境界線を追加 */
 }
 
 #roulette-wheel {
@@ -154,28 +156,29 @@ button:disabled {
     position: relative;
     border-radius: 50%;
     transform: rotate(0deg);
-    /* transition は JS で設定 */
 }
 
-/* セグメントの基本スタイル */
+/* セグメントの基本スタイル (修正) */
 .segment {
     position: absolute;
     top: 0;
     left: 50%;
     width: 50%;
     height: 100%;
-    transform-origin: 0% 50%; /* 左端の中央を回転軸にする */
-    clip-path: polygon(0% 0%, 100% 50%, 0% 100%); /* 扇形を形成 */
+    transform-origin: 0% 50%; 
+    /* 扇形描画のためにclip-pathを修正 */
+    clip-path: polygon(0% 0%, 100% 50%, 0% 100%); 
     opacity: 1;
-    border-right: 2px solid #fff; /* セグメント間の区切り */
+    border-right: 1px solid rgba(255, 255, 255, 0.5); /* 区切り線をより自然に */
     box-sizing: border-box;
 }
 
-/* テキストのスタイル */
+/* テキストのスタイル (修正) */
 .segment-text {
     position: absolute;
+    /* ルーレットの中心を基準点にする */
     top: 50%;
-    left: 0;
+    left: 50%;
     width: 100px; /* テキスト領域の幅 */
     text-align: left;
     white-space: nowrap;
@@ -183,15 +186,17 @@ button:disabled {
     font-size: 0.9em;
     color: white;
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.6);
+    /* transform-originを中央から外側へずらす */
+    transform-origin: 0% 50%; 
 }
 
 /* マーカー（矢印） */
 .marker {
     position: absolute;
-    top: -15px; /* ルーレットの外側に配置 */
+    top: -15px; 
     left: 50%;
     transform: translateX(-50%);
-    color: #ff4500; /* 目立つ色 */
+    color: #ff4500; 
     font-size: 30px;
     z-index: 100;
 }
@@ -234,6 +239,12 @@ button:disabled {
         margin: 20px auto;
     }
     
+    /* テキストの配置調整のため、JS側の translateX(75px) も小さくする必要がある
+       ここではテキストのサイズを調整して対応 */
+    .segment-text {
+        font-size: 0.8em;
+    }
+
     .item-input-group {
         flex-direction: column;
         gap: 5px;

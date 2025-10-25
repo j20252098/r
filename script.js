@@ -125,6 +125,7 @@ startBtn.addEventListener('click', () => {
 resetBtn.addEventListener('click', () => {
     rouletteArea.classList.add('hidden');
     settingsArea.classList.remove('hidden');
+    // 初期回転角度に戻す
     rouletteWheel.style.transform = 'rotate(-90deg)'; 
 });
 
@@ -164,12 +165,12 @@ function setupRouletteWheel() {
         // テキストを中央から放射状に配置するための計算
         const textRotation = currentAngle + (angle / 2); // セグメントの中央角度
         
-        // ★テキストの回転を修正★
+        // ★修正点: テキストの回転を調整 (水平に戻す)★
         textElement.style.transform = `
             rotate(${textRotation}deg)
             translateY(-50%) 
             translateX(100px) 
-            rotate(90deg) /* テキスト自体を水平に近く戻す回転を90度に調整 */
+            rotate(90deg) /* 垂直に戻すための回転を90度に調整 */
         `;
         
         textElements.push(textElement);
@@ -224,6 +225,7 @@ function spinRoulette() {
             const stopPositionAngle = cumulativeAngle + randomOffset;
 
             const fullSpins = 7 * 360; 
+            // 停止位置がマーカー(左側, 270度)に来るように計算
             targetAngle = fullSpins + (360 - stopPositionAngle); 
 
             break;
@@ -244,6 +246,7 @@ function spinRoulette() {
         
         rouletteWheel.style.transition = 'none';
         const normalizedAngle = targetAngle % 360;
+        // 次回は初期回転-90度を考慮した位置からスタート
         rouletteWheel.style.transform = `rotate(${normalizedAngle - 90}deg)`; 
         
     }, 6100); 
